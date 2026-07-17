@@ -1,0 +1,662 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>超便利・お助けアプリ</title>
+  <style>
+    /* 全体のデザイン設定 */
+    body {
+      font-family: sans-serif;
+      background-color: #f4f7f6;
+      margin: 0;
+      padding: 10px;
+      color: #333;
+    }
+    .tab-container {
+      display: flex;
+      gap: 5px;
+      margin-bottom: 15px;
+      overflow-x: auto;
+      white-space: nowrap;
+      padding-bottom: 5px;
+    }
+    .tab-btn {
+      flex: 1;
+      padding: 12px;
+      background-color: #ddd;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    .tab-btn.active { background-color: #008CBA; color: white; }
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* デイリーミッション */
+    .coin-board {
+      background-color: #ffd700;
+      padding: 15px;
+      border-radius: 10px;
+      font-size: 22px;
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 20px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .mission-form { display: flex; gap: 5px; margin-bottom: 20px; }
+    .mission-form input { padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; }
+    .mission-form input[type="text"] { flex: 2; }
+    .mission-form input[type="number"] { flex: 1; }
+    .btn-add { background-color: #4CAF50; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+    
+    .mission-item {
+      background-color: white;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .mission-item.cleared { background-color: #e0e0e0; color: #888; }
+    .mission-actions { display: flex; gap: 5px; }
+    .btn-clear { background-color: #008CBA; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold;}
+    .btn-clear:disabled { background-color: #aaa; cursor: not-allowed; }
+    .btn-delete { background-color: #f44336; color: white; border: none; padding: 10px; border-radius: 5px; cursor: pointer; font-weight: bold;}
+
+    /* メモ帳・コマンド帳 */
+    .memo-item {
+      background-color: #e8f5e9;
+      padding: 15px;
+      margin-bottom: 10px;
+      border-radius: 8px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      border-left: 5px solid #4CAF50;
+    }
+    .memo-title { font-weight: bold; margin-bottom: 5px; font-size: 16px; }
+    .memo-content {
+      background-color: white;
+      padding: 8px;
+      border-radius: 4px;
+      font-family: monospace;
+      word-break: break-all;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+    }
+    .memo-actions { display: flex; gap: 5px; justify-content: flex-end; }
+    .btn-copy { background-color: #ff9800; color: white; border: none; padding: 8px 15px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+    
+    /* 計算機 */
+    .grade-selector { display: flex; gap: 5px; margin-bottom: 15px; justify-content: center; }
+    .grade-btn {
+      padding: 10px 15px;
+      background-color: #fff;
+      border: 2px solid #008CBA;
+      color: #008CBA;
+      border-radius: 20px;
+      font-size: 14px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+    .grade-btn.active { background-color: #008CBA; color: white; }
+    .calc-box {
+      background-color: white;
+      padding: 15px;
+      border-radius: 10px;
+      margin-bottom: 15px;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    .calc-box h3 { margin-top: 0; color: #333; border-bottom: 2px solid #eee; padding-bottom: 5px; font-size: 16px;}
+    .calc-input-row { margin-bottom: 10px; display: flex; gap: 5px; flex-wrap: wrap;}
+    .calc-input-row input { width: 70px; padding: 8px; font-size: 16px; border: 1px solid #ccc; border-radius: 5px;}
+    .calc-btn { background-color: #008CBA; color: white; border: none; padding: 10px; width: 100%; border-radius: 5px; font-size: 16px; cursor: pointer; margin-top: 5px; font-weight: bold;}
+    .result { font-weight: bold; color: #d9534f; margin-top: 10px; font-size: 18px; text-align: center; background: #fef0f0; padding: 10px; border-radius: 5px;}
+
+    /* 電卓 */
+    .basic-calc { background-color: #333; padding: 15px; border-radius: 10px; }
+    .calc-display {
+      background-color: #fff;
+      padding: 10px;
+      font-size: 24px;
+      text-align: right;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      min-height: 30px;
+      word-break: break-all;
+    }
+    .calc-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+    .calc-grid button {
+      padding: 15px 0;
+      font-size: 20px;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      background-color: #eee;
+      font-weight: bold;
+    }
+    .calc-grid button.op { background-color: #ff9800; color: white; }
+    .calc-grid button.eq { background-color: #4CAF50; color: white; grid-column: span 2; }
+    .calc-grid button.clear { background-color: #f44336; color: white; grid-column: span 2; }
+
+    /* 分数 */
+    .fraction-container { display: flex; align-items: center; justify-content: center; gap: 10px; }
+    .fraction { display: flex; flex-direction: column; align-items: center; }
+    .fraction input { width: 50px; text-align: center; }
+    .fraction-line { width: 100%; height: 2px; background-color: #333; margin: 2px 0; }
+    .operator-select { font-size: 20px; padding: 5px; }
+
+    /* コピーお知らせ */
+    #toast {
+      visibility: hidden;
+      min-width: 200px;
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      border-radius: 5px;
+      padding: 10px;
+      position: fixed;
+      z-index: 1;
+      left: 50%;
+      bottom: 30px;
+      transform: translateX(-50%);
+      font-size: 14px;
+    }
+    #toast.show {
+      visibility: visible;
+      animation: fadein 0.5s, fadeout 0.5s 2.5s;
+    }
+    @keyframes fadein { from {bottom: 0; opacity: 0;} to {bottom: 30px; opacity: 1;} }
+    @keyframes fadeout { from {bottom: 30px; opacity: 1;} to {bottom: 0; opacity: 0;} }
+  </style>
+</head>
+<body>
+
+  <div id="toast">コピーしました！</div>
+
+  <!-- タブボタン -->
+  <div class="tab-container">
+    <button class="tab-btn active" id="btn-mission" onclick="switchTab('mission')">ミッション</button>
+    <button class="tab-btn" id="btn-calc" onclick="switchTab('calc')">宿題計算機</button>
+    <button class="tab-btn" id="btn-memo" onclick="switchTab('memo')">メモ・コマンド</button>
+  </div>
+
+  <!-- ＝＝＝ デイリーミッション画面 ＝＝＝ -->
+  <div id="screen-mission" class="screen active">
+    <div class="coin-board">
+      💰 コイン: <span id="coin-display">0</span>
+    </div>
+    <div class="mission-form">
+      <input type="text" id="new-mission-name" placeholder="新しいミッション">
+      <input type="number" id="new-mission-reward" placeholder="コイン" min="1">
+      <button class="btn-add" onclick="addMission()">追加</button>
+    </div>
+    <div id="mission-list"></div>
+  </div>
+
+  <!-- ＝＝＝ メモ・コマンド帳画面 ＝＝＝ -->
+  <div id="screen-memo" class="screen">
+    <div class="mission-form">
+      <input type="text" id="new-memo-title" placeholder="タイトル (例: バリア)">
+      <input type="text" id="new-memo-content" placeholder="内容 (例: /give @s barrier)">
+      <button class="btn-add" onclick="addMemo()">追加</button>
+    </div>
+    <div id="memo-list"></div>
+  </div>
+
+  <!-- ＝＝＝ 宿題お助け計算機画面 ＝＝＝ -->
+  <div id="screen-calc" class="screen">
+    <div class="grade-selector">
+      <button class="grade-btn active" id="btn-basic" onclick="switchGrade('basic')">普通の電卓</button>
+      <button class="grade-btn" id="btn-elem" onclick="switchGrade('elem')">小学モード</button>
+      <button class="grade-btn" id="btn-jh" onclick="switchGrade('jh')">中学モード</button>
+    </div>
+
+    <!-- 普通の電卓 -->
+    <div id="calc-basic" class="screen active">
+      <div class="basic-calc">
+        <div class="calc-display" id="basic-calc-display">0</div>
+        <div class="calc-grid">
+          <button class="clear" onclick="inputBasicCalc('C')">C (クリア)</button>
+          <button class="op" onclick="inputBasicCalc('/')">÷</button>
+          <button class="op" onclick="inputBasicCalc('*')">×</button>
+          <button onclick="inputBasicCalc('7')">7</button>
+          <button onclick="inputBasicCalc('8')">8</button>
+          <button onclick="inputBasicCalc('9')">9</button>
+          <button class="op" onclick="inputBasicCalc('-')">－</button>
+          <button onclick="inputBasicCalc('4')">4</button>
+          <button onclick="inputBasicCalc('5')">5</button>
+          <button onclick="inputBasicCalc('6')">6</button>
+          <button class="op" onclick="inputBasicCalc('+')">＋</button>
+          <button onclick="inputBasicCalc('1')">1</button>
+          <button onclick="inputBasicCalc('2')">2</button>
+          <button onclick="inputBasicCalc('3')">3</button>
+          <button class="eq" onclick="inputBasicCalc('=')">＝</button>
+          <button onclick="inputBasicCalc('0')" style="grid-column: span 2;">0</button>
+          <button onclick="inputBasicCalc('.')">.</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 小学モードの計算機 -->
+    <div id="calc-elem" class="screen">
+      <!-- 図形計算機 -->
+      <div class="calc-box">
+        <h3>図形の面積</h3>
+        <select id="shape-select" style="font-size: 16px; padding: 5px; margin-bottom: 10px; width: 100%;">
+          <option value="triangle">三角形 (底辺×高さ÷2)</option>
+          <option value="trapezoid">台形 ((上底+下底)×高さ÷2)</option>
+        </select>
+        <div class="calc-input-row">
+          <input type="number" id="shape-val1" placeholder="底辺/上底">
+          <input type="number" id="shape-val2" placeholder="高さ/下底">
+          <input type="number" id="shape-val3" placeholder="高さ(台形のみ)" style="display:none;">
+        </div>
+        <button class="calc-btn" onclick="calcShape()">計算する</button>
+        <div class="result" id="shape-result">答え: </div>
+      </div>
+
+      <!-- 分数計算機 -->
+      <div class="calc-box">
+        <h3>分数の計算 (約分も自動！)</h3>
+        <div class="fraction-container">
+          <div class="fraction">
+            <input type="number" id="frac1-num" placeholder="分子(上)">
+            <div class="fraction-line"></div>
+            <input type="number" id="frac1-den" placeholder="分母(下)">
+          </div>
+          <select class="operator-select" id="frac-op">
+            <option value="+">＋</option>
+            <option value="-">－</option>
+            <option value="*">×</option>
+            <option value="/">÷</option>
+          </select>
+          <div class="fraction">
+            <input type="number" id="frac2-num" placeholder="分子(上)">
+            <div class="fraction-line"></div>
+            <input type="number" id="frac2-den" placeholder="分母(下)">
+          </div>
+        </div>
+        <button class="calc-btn" onclick="calcFraction()">計算する</button>
+        <div class="result" id="frac-result">答え: </div>
+      </div>
+    </div>
+
+    <!-- 中学モードの計算機 -->
+    <div id="calc-jh" class="screen">
+      <!-- 三平方の定理 -->
+      <div class="calc-box">
+        <h3>三平方の定理 (直角三角形の斜辺)</h3>
+        <p style="font-size:14px; color:#666; margin-top:0;">公式: a² + b² = c² (cが斜辺)</p>
+        <div class="calc-input-row">
+          <input type="number" id="pytha-a" placeholder="辺a">
+          <input type="number" id="pytha-b" placeholder="辺b">
+        </div>
+        <button class="calc-btn" onclick="calcPythagoras()">斜辺(c)を計算</button>
+        <div class="result" id="pytha-result">答え: </div>
+      </div>
+
+      <!-- 円柱の体積 -->
+      <div class="calc-box">
+        <h3>円柱の体積</h3>
+        <p style="font-size:14px; color:#666; margin-top:0;">公式: 半径 × 半径 × π × 高さ</p>
+        <div class="calc-input-row">
+          <input type="number" id="cylinder-r" placeholder="半径">
+          <input type="number" id="cylinder-h" placeholder="高さ">
+        </div>
+        <button class="calc-btn" onclick="calcCylinder()">計算する</button>
+        <div class="result" id="cylinder-result">答え: </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* ==========================================
+       画面切り替え
+    ========================================== */
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-container > .tab-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('body > .screen').forEach(screen => screen.classList.remove('active'));
+      document.getElementById('btn-' + tabName).classList.add('active');
+      document.getElementById('screen-' + tabName).classList.add('active');
+    }
+
+    function switchGrade(grade) {
+      document.querySelectorAll('.grade-selector > .grade-btn').forEach(btn => btn.classList.remove('active'));
+      document.querySelectorAll('#screen-calc > .screen').forEach(screen => screen.classList.remove('active'));
+      document.getElementById('btn-' + grade).classList.add('active');
+      document.getElementById('calc-' + grade).classList.add('active');
+    }
+
+    /* ==========================================
+       デイリーミッション
+    ========================================== */
+    let coins = 0;
+    let missions = [];
+    const getTodayString = () => new Date().toLocaleDateString();
+
+    const defaultMissions = [
+      { name: "算数の宿題を終わらせる", reward: 10, cleared: false, lastClearDate: "" },
+      { name: "お風呂掃除をする", reward: 15, cleared: false, lastClearDate: "" },
+      { name: "食器の片付けをする", reward: 10, cleared: false, lastClearDate: "" }
+    ];
+
+    function loadMissionData() {
+      let savedCoins = localStorage.getItem("myCoins2");
+      if(savedCoins !== null) coins = parseInt(savedCoins);
+      
+      let savedMissions = localStorage.getItem("myMissions2");
+      if(savedMissions !== null) {
+        missions = JSON.parse(savedMissions);
+      } else {
+        missions = JSON.parse(JSON.stringify(defaultMissions));
+      }
+
+      let today = getTodayString();
+      missions.forEach(m => { if(m.lastClearDate !== today) m.cleared = false; });
+      updateMissionUI();
+    }
+
+    function saveMissionData() {
+      localStorage.setItem("myCoins2", coins);
+      localStorage.setItem("myMissions2", JSON.stringify(missions));
+    }
+
+    function updateMissionUI() {
+      document.getElementById("coin-display").innerText = coins;
+      let list = document.getElementById("mission-list");
+      list.innerHTML = ""; 
+
+      missions.forEach((m, i) => {
+        let div = document.createElement("div");
+        div.className = "mission-item";
+        if(m.cleared) div.classList.add("cleared");
+        
+        let nameSpan = document.createElement("span");
+        nameSpan.innerText = m.name;
+        
+        let actionDiv = document.createElement("div");
+        actionDiv.className = "mission-actions";
+
+        let clearBtn = document.createElement("button");
+        clearBtn.className = "btn-clear";
+        if(m.cleared) {
+          clearBtn.innerText = "済";
+          clearBtn.disabled = true;
+        } else {
+          clearBtn.innerText = "+" + m.reward;
+          clearBtn.onclick = () => completeMission(i);
+        }
+
+        let deleteBtn = document.createElement("button");
+        deleteBtn.className = "btn-delete";
+        deleteBtn.innerText = "✖";
+        deleteBtn.onclick = () => deleteMission(i);
+
+        actionDiv.appendChild(clearBtn);
+        actionDiv.appendChild(deleteBtn);
+        div.appendChild(nameSpan);
+        div.appendChild(actionDiv);
+        list.appendChild(div);
+      });
+    }
+
+    function addMission() {
+      let n = document.getElementById("new-mission-name");
+      let r = document.getElementById("new-mission-reward");
+      if(n.value === "" || r.value === "") return;
+      missions.push({ name: n.value, reward: parseInt(r.value), cleared: false, lastClearDate: "" });
+      n.value = ""; r.value = "";
+      saveMissionData(); updateMissionUI();
+    }
+
+    function completeMission(i) {
+      if(missions[i].cleared) return;
+      coins += missions[i].reward;
+      missions[i].cleared = true;
+      missions[i].lastClearDate = getTodayString();
+      saveMissionData(); updateMissionUI();
+    }
+
+    function deleteMission(i) {
+      if(confirm("このミッションを削除しますか？")) {
+        missions.splice(i, 1);
+        saveMissionData(); updateMissionUI();
+      }
+    }
+
+    /* ==========================================
+       メモ・コマンド帳
+    ========================================== */
+    let memos = [];
+    const defaultMemos = [
+      { title: "バリアブロック", content: "/give @s barrier" },
+      { title: "時間を朝にする", content: "/time set day" }
+    ];
+
+    function loadMemoData() {
+      let saved = localStorage.getItem("myMemos");
+      memos = saved !== null ? JSON.parse(saved) : JSON.parse(JSON.stringify(defaultMemos));
+      updateMemoUI();
+    }
+
+    function saveMemoData() { localStorage.setItem("myMemos", JSON.stringify(memos)); }
+
+    function updateMemoUI() {
+      let list = document.getElementById("memo-list");
+      list.innerHTML = ""; 
+      memos.forEach((m, i) => {
+        let div = document.createElement("div"); div.className = "memo-item";
+        let titleDiv = document.createElement("div"); titleDiv.className = "memo-title"; titleDiv.innerText = m.title;
+        let contentDiv = document.createElement("div"); contentDiv.className = "memo-content"; contentDiv.innerText = m.content;
+        let actionDiv = document.createElement("div"); actionDiv.className = "memo-actions";
+
+        let copyBtn = document.createElement("button"); copyBtn.className = "btn-copy"; copyBtn.innerText = "コピー";
+        copyBtn.onclick = () => copyText(m.content);
+        let deleteBtn = document.createElement("button"); deleteBtn.className = "btn-delete"; deleteBtn.innerText = "✖";
+        deleteBtn.onclick = () => deleteMemo(i);
+
+        actionDiv.appendChild(copyBtn); actionDiv.appendChild(deleteBtn);
+        div.appendChild(titleDiv); div.appendChild(contentDiv); div.appendChild(actionDiv);
+        list.appendChild(div);
+      });
+    }
+
+    function addMemo() {
+      let t = document.getElementById("new-memo-title");
+      let c = document.getElementById("new-memo-content");
+      if(t.value === "" || c.value === "") return;
+      memos.push({ title: t.value, content: c.value });
+      t.value = ""; c.value = "";
+      saveMemoData(); updateMemoUI();
+    }
+
+    function deleteMemo(i) {
+      if(confirm("このメモを削除しますか？")) { memos.splice(i, 1); saveMemoData(); updateMemoUI(); }
+    }
+
+    function copyText(text) {
+      navigator.clipboard.writeText(text).then(() => showToast()).catch(() => alert("コピー失敗"));
+    }
+
+    function showToast() {
+      let toast = document.getElementById("toast");
+      toast.className = "show";
+      setTimeout(() => { toast.className = toast.className.replace("show", ""); }, 3000);
+    }
+
+    /* ==========================================
+       普通の電卓（修正版）
+    ========================================== */
+    let basicCalcExpr = "";
+    let isCalculated = false; // =を押した直後かどうか
+
+    function inputBasicCalc(val) {
+      let display = document.getElementById("basic-calc-display");
+      
+      if (val === 'C') {
+        basicCalcExpr = "";
+        isCalculated = false;
+        display.innerText = "0";
+      } else if (val === '=') {
+        try {
+          // 「08」などの入力でエラーにならないよう、余分な0を取り除く処理
+          let cleanedExpr = basicCalcExpr.replace(/\b0+(?=\d)/g, "");
+          let result = new Function('return ' + cleanedExpr)();
+          
+          // 小数の微妙な計算ズレをピッタリに直す
+          result = Math.round(result * 100000000) / 100000000;
+          
+          display.innerText = result;
+          basicCalcExpr = result.toString();
+          isCalculated = true; 
+        } catch(e) {
+          display.innerText = "エラー";
+          basicCalcExpr = "";
+          isCalculated = false;
+        }
+      } else {
+        // 計算直後に数字を押したら、くっつけずに新しい計算にする
+        if (isCalculated && /[0-9]/.test(val)) {
+          basicCalcExpr = val;
+        } else {
+          // 最初の0の時にさらに数字を打ったときの見栄えを良くする
+          if (basicCalcExpr === "" && val === '.') {
+            basicCalcExpr = "0.";
+          } else {
+            basicCalcExpr += val;
+          }
+        }
+        isCalculated = false;
+        display.innerText = basicCalcExpr;
+      }
+    }
+
+    /* ==========================================
+       宿題計算機：小学モード
+    ========================================== */
+    document.getElementById("shape-select").addEventListener("change", function() {
+      let val3 = document.getElementById("shape-val3");
+      document.getElementById("shape-val1").value = "";
+      document.getElementById("shape-val2").value = "";
+      document.getElementById("shape-val3").value = "";
+      document.getElementById("shape-result").innerText = "答え: ";
+      
+      if(this.value === "trapezoid") {
+        val3.style.display = "inline-block";
+        document.getElementById("shape-val1").placeholder = "上底";
+        document.getElementById("shape-val2").placeholder = "下底";
+      } else {
+        val3.style.display = "none";
+        document.getElementById("shape-val1").placeholder = "底辺";
+        document.getElementById("shape-val2").placeholder = "高さ";
+      }
+    });
+
+    function calcShape() {
+      let type = document.getElementById("shape-select").value;
+      let v1 = Number(document.getElementById("shape-val1").value);
+      let v2 = Number(document.getElementById("shape-val2").value);
+      let v3 = Number(document.getElementById("shape-val3").value);
+      let result = 0;
+
+      if(type === "triangle") result = (v1 * v2) / 2;
+      else if(type === "trapezoid") result = ((v1 + v2) * v3) / 2;
+      
+      document.getElementById("shape-result").innerText = "答え: " + result;
+    }
+
+    // 分数の約分用
+    function getGCD(a, b) {
+      a = Math.abs(a); b = Math.abs(b);
+      while (b !== 0) { let temp = b; b = a % b; a = temp; }
+      return a;
+    }
+
+    function calcFraction() {
+      let n1 = Number(document.getElementById("frac1-num").value);
+      let d1 = Number(document.getElementById("frac1-den").value);
+      let n2 = Number(document.getElementById("frac2-num").value);
+      let d2 = Number(document.getElementById("frac2-den").value);
+      let op = document.getElementById("frac-op").value;
+
+      if(d1 === 0 || d2 === 0) {
+        document.getElementById("frac-result").innerText = "分母に0は入れられません！"; return;
+      }
+
+      let resNum = 0; let resDen = 0;
+      if(op === "+") { resNum = (n1 * d2) + (n2 * d1); resDen = d1 * d2; }
+      else if(op === "-") { resNum = (n1 * d2) - (n2 * d1); resDen = d1 * d2; }
+      else if(op === "*") { resNum = n1 * n2; resDen = d1 * d2; }
+      else if(op === "/") { resNum = n1 * d2; resDen = d1 * n2; }
+
+      // 答えがマイナスの時の表示を綺麗にする
+      if (resDen < 0) { resNum = -resNum; resDen = -resDen; }
+
+      let gcd = getGCD(resNum, resDen);
+      resNum = resNum / gcd; resDen = resDen / gcd;
+
+      if(resNum === 0) {
+        document.getElementById("frac-result").innerText = "答え: 0";
+      } else if(resDen === 1) {
+        document.getElementById("frac-result").innerText = "答え: " + resNum;
+      } else {
+        document.getElementById("frac-result").innerText = "答え: " + resNum + " / " + resDen;
+      }
+    }
+
+    /* ==========================================
+       宿題計算機：中学モード（中学校の数学ルールに修正）
+    ========================================== */
+    // 中学校の数学用に、ルート（√）を綺麗にする関数（例: √12 → 2√3）
+    function simplifySqrt(n) {
+      let inside = n;
+      let outside = 1;
+      for (let i = 2; i * i <= inside; i++) {
+        while (inside % (i * i) === 0) {
+          outside *= i;
+          inside /= (i * i);
+        }
+      }
+      if (inside === 1) return outside; // ぴったり整数になる場合（例: √9 → 3）
+      if (outside === 1) return "√" + inside; // そのまま（例: √5）
+      return outside + "√" + inside; // 外に出せる場合（例: 2√3）
+    }
+
+    function calcPythagoras() {
+      let a = Number(document.getElementById("pytha-a").value);
+      let b = Number(document.getElementById("pytha-b").value);
+      if(a > 0 && b > 0) {
+        let c2 = (a * a) + (b * b);
+        // 中学校の宿題では、小数は使わずに「ルート（√）」で答えます
+        let resultStr = simplifySqrt(c2);
+        document.getElementById("pytha-result").innerText = "答え: " + resultStr;
+      } else {
+        document.getElementById("pytha-result").innerText = "数字を入れてね！";
+      }
+    }
+
+    function calcCylinder() {
+      let r = Number(document.getElementById("cylinder-r").value);
+      let h = Number(document.getElementById("cylinder-h").value);
+      if(r > 0 && h > 0) {
+        // 中学校の宿題では「3.14」ではなく「π」を使います
+        let vol = r * r * h;
+        document.getElementById("cylinder-result").innerText = "答え: " + vol + "π";
+      } else {
+        document.getElementById("cylinder-result").innerText = "数字を入れてね！";
+      }
+    }
+
+    // 起動時にデータを読み込む
+    window.onload = function() {
+      loadMissionData();
+      loadMemoData();
+    };
+
+  </script>
+</body>
+</html>
